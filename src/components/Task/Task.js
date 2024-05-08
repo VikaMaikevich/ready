@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import './Task.css'
 
 export default class Task extends Component {
   constructor() {
@@ -10,6 +9,15 @@ export default class Task extends Component {
       сhangedTaskLabel: '',
       edited: false,
     }
+  }
+
+  componentDidMount() {
+    const { timerStep, id } = this.props
+    this.timerId = setInterval(() => timerStep(id), 1000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerId)
   }
 
   onClickEdit = (prevLabel) => {
@@ -34,10 +42,13 @@ export default class Task extends Component {
   }
 
   render() {
-    const { label, onDelete, onToggleDone, done, created, id } = this.props
+    const { label, onDelete, onToggleDone, done, id, created, time, onStopTimer, onStartTimer } = this.props
     const { edited, сhangedTaskLabel } = this.state
 
-    let liClassName = null
+    const minutes = time ? Math.floor(time / 1000 / 60) : 0
+    const seconds = time ? (time / 1000) % 60 : 0
+
+    let liClassName = ''
     if (done) {
       liClassName = 'completed'
     } else if (edited) {
@@ -54,8 +65,27 @@ export default class Task extends Component {
           <div className="view">
             <input className="toggle" type="checkbox" checked={done} onChange={onToggleDone} id={id} />
             <label htmlFor={id}>
-              <span className="description">{label}</span>
-              <span className="created">created {formatDistanceToNow(created, { includeSeconds: true })} ago</span>
+              <span className=" title">{label}</span>
+              <span className="description controle-timer">
+                <button
+                  className="icon icon-play"
+                  aria-label="start timer"
+                  onClick={() => onStartTimer(id)}
+                  type="button"
+                />
+                <button
+                  className="icon icon-pause"
+                  aria-label="stop timer"
+                  onClick={() => onStopTimer(id)}
+                  type="button"
+                />
+                <span>
+                  {minutes < 10 ? `0${minutes}` : minutes}:{seconds < 10 ? `0${seconds}` : seconds}
+                </span>
+              </span>
+              <span className="description ">
+                created {formatDistanceToNow(created, { includeSeconds: true })} ago{' '}
+              </span>
             </label>
             {!done && (
               <button

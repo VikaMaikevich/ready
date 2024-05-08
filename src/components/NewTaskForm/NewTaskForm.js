@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import './NewTaskForm.css'
 
 export default class NewTaskForm extends Component {
   constructor(props) {
     super(props)
     this.state = {
       label: '',
+      timeMin: '',
+      timeSec: '',
     }
   }
 
@@ -16,31 +17,61 @@ export default class NewTaskForm extends Component {
     })
   }
 
+  onTimeMinChange = (e) => {
+    this.setState({
+      timeMin: e.target.value,
+    })
+  }
+
+  onTimeSecChange = (e) => {
+    this.setState({
+      timeSec: e.target.value,
+    })
+  }
+
   onSubmit = (e) => {
     e.preventDefault()
-    const { label } = this.state
+    const { label, timeMin, timeSec } = this.state
     const { addItem } = this.props
+    const totalTime = (Number(timeMin) || 0) * 60 * 1000 + (Number(timeSec) || 0) * 1000
     if (label.trim().length !== 0) {
-      addItem(label)
+      addItem(label, totalTime)
       this.setState({
         label: '',
+        timeMin: '',
+        timeSec: '',
       })
     }
   }
 
   render() {
-    const { label } = this.state
+    const { label, timeMin, timeSec } = this.state
     return (
-      <form onSubmit={this.onSubmit}>
+      <form onSubmit={this.onSubmit} className="new-todo-form">
         <input
           type="text"
           className="new-todo"
           id="taskInput"
           name="taskInput"
-          placeholder="What needs to be done?"
+          placeholder="Writing..."
           value={label}
           onChange={this.onLabelChange}
         />
+        <input
+          className="new-todo-form__timer"
+          placeholder="Min"
+          value={timeMin}
+          type="number"
+          onChange={this.onTimeMinChange}
+        />
+        <input
+          className="new-todo-form__timer"
+          placeholder="Sec"
+          value={timeSec}
+          type="number"
+          onChange={this.onTimeSecChange}
+        />
+        <button type="submit" style={{ display: 'none' }} aria-hidden />
       </form>
     )
   }

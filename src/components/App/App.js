@@ -16,7 +16,7 @@ class App extends Component {
     }
   }
 
-  addItem = (text) => {
+  addItem = (text, time) => {
     this.setState((prevState) => {
       const newTask = {
         id: Date.now().toString(36) + Math.random().toString(36),
@@ -24,6 +24,9 @@ class App extends Component {
         done: false,
         edited: false,
         created: new Date(),
+        activeTimer: false,
+        time,
+        timerId: null,
       }
       return {
         todoData: [newTask, ...prevState.todoData],
@@ -86,6 +89,26 @@ class App extends Component {
     })
   }
 
+  timerStep = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((todo) =>
+        todo.id === id && todo.time > 0 && todo.activeTimer ? { ...todo, time: todo.time - 1000 } : todo
+      ),
+    }))
+  }
+
+  onStartTimer = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((todo) => (todo.id === id ? { ...todo, activeTimer: true } : todo)),
+    }))
+  }
+
+  onStopTimer = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((todo) => (todo.id === id ? { ...todo, activeTimer: false } : todo)),
+    }))
+  }
+
   render() {
     const { todoData, filter } = this.state
     const todoCount = todoData.filter((el) => !el.done).length
@@ -101,6 +124,9 @@ class App extends Component {
             onDelete={this.deleteTask}
             onToggleDone={this.onToggleDone}
             updateTask={this.updateTask}
+            onStartTimer={this.onStartTimer}
+            onStopTimer={this.onStopTimer}
+            timerStep={this.timerStep}
           />
           <Footer
             todoCount={todoCount}

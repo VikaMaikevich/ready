@@ -1,5 +1,4 @@
 import React from 'react'
-import './TaskFilter.css'
 
 function TaskFilter({ onChangeFilter, filter }) {
   return (
