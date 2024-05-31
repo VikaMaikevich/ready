@@ -10,8 +10,17 @@ const findIndexById = (array, id) => array.findIndex((el) => el.id === id)
 function App() {
   const [todoData, setTodoData] = useState([])
   const [filter, setFilter] = useState('All')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const addItem = (text, time) => {
+    if (time < 0) {
+      setErrorMessage('Никаких отрицательных чисел')
+      setTimeout(() => {
+        setErrorMessage('')
+      }, 5000)
+      return
+    }
+
     const newTask = {
       id: Date.now().toString(36) + Math.random().toString(36),
       label: text,
@@ -39,14 +48,17 @@ function App() {
   const onToggleDone = (id) => {
     setTodoData((prevState) => {
       const idx = findIndexById(prevState, id)
-      if (idx !== -1 && prevState[idx].timerId) {
-        clearInterval(prevState[idx].timerId)
-      }
       const updatedTasksArray = prevState.map((task, index) => {
         if (index !== idx) {
           return task
         }
-        return { ...task, done: !task.done }
+        const updatedTask = { ...task, done: !task.done }
+        if (updatedTask.done) {
+          updatedTask.time = 0
+          clearInterval(task.timerId)
+          updatedTask.timerId = null
+        }
+        return updatedTask
       })
       return updatedTasksArray
     })
@@ -82,7 +94,7 @@ function App() {
   const timerStep = (id) => {
     setTodoData((prevState) =>
       prevState.map((todo) =>
-        todo.id === id && todo.time > 0 && todo.activeTimer ? { ...todo, time: todo.time - 1000 } : todo
+        todo.id === id && todo.activeTimer ? { ...todo, time: Math.max(0, todo.time - 1000) } : todo
       )
     )
   }
@@ -119,6 +131,7 @@ function App() {
           filter={filter}
           onClearCompleted={onClearCompleted}
         />
+        {errorMessage && <div className="error">{errorMessage}</div>}
       </section>
     </section>
   )
